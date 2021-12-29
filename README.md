@@ -1,8 +1,13 @@
-# course project: empirical performance analysis for parallel MST algorithm
+# course project: parallel graph layout algorithm on GPU
 
-## algorithms
+## backgrounds
 
-## graphs
+## algorithm design
+
+## testcase
+
+## performance
 
 ## reference
 
+- [Multi-Level Graph Layout on the GPU](https://ieeexplore.ieee.org/abstract/document/4376155)

@@ -1,0 +1,44 @@
+###
+### compiling&linking options
+###
+
+# Enable cuda device debugging for Debug build.
+# Enable optimization for Release build.
+if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+    message(NOTICE "[build type] debug mode on")
+    add_compile_options(
+        -O0
+        -G
+        -g
+        -lineinfo
+        -Xcompiler=-rdynamic
+    )
+    add_link_options(
+        -g
+        -rdynamic
+    )
+    add_definitions(-D DEBUG)
+else()
+    message(NOTICE "[build type] debug mode off")
+endif()
+
+###
+### Libraries
+###
+
+add_library(common common.cu)
+target_link_libraries(common
+    CUDA::curand
+)
+
+
+###
+### Executables
+###
+
+add_executable(main
+    main.cu
+)
+target_link_libraries(main
+    common
+)
