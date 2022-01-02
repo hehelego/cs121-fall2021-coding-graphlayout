@@ -1,5 +1,7 @@
 data/
 bin/
+copy-all.fish
+copy-src.fish
 
 
 ## Core latex/pdflatex auxiliary files:
