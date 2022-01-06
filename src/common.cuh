@@ -43,11 +43,8 @@ const FP Height = 10.0;
 const FP START_TEMPERATURE = Width + Height;
 const FP COOLING_FACTOR = 0.98;
 
-#ifdef OMP_THREADS
-const u32 CPU_THS = OMP_THREADS;
-#else
+// OMP CPU threads
 const u32 CPU_THS = 8;
-#endif
 
 // common functions
 template <typename T> __host__ __device__ inline T max2(T a, T b) { return a < b ? b : a; }

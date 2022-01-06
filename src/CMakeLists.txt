@@ -2,11 +2,6 @@
 ### compiling&linking options
 ###
 
-set(OMP_THREADS 8 CACHE STRING)
-add_compile_definitions(
-    -D OMP_THREADS=${OMP_THREADS}
-)
-
 # Enable cuda device debugging for Debug build.
 # Enable optimization for Release build.
 if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
