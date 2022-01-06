@@ -44,7 +44,7 @@ static FP layout(Vertex *vertices, Edge *edges, u32 *edge_head, u32 *edge_tail, 
   for (u32 run = 0; run < ITER; run++) {
 #pragma omp parallel for default(shared) schedule(dynamic, 16)
     for (u32 i = 0; i < N; i++) {
-      // push away other vertices
+      // push away by other vertices
       for (u32 j = 0; j < N; j++) {
         auto dx = vertices[j].pos.x - vertices[i].pos.x;
         auto dy = vertices[j].pos.y - vertices[i].pos.y;
@@ -54,22 +54,22 @@ static FP layout(Vertex *vertices, Edge *edges, u32 *edge_head, u32 *edge_tail, 
         vertices[j].disp.x += dx / dis * push;
         vertices[j].disp.y += dy / dis * push;
       }
-      // attract other vertices
+      // attract by other vertices
       u32 l = edge_head[i], r = edge_tail[i];
       for (u32 k = l; k <= r; k++) {
         u32 j = edges[k].v;
-        auto dx = vertices[j].pos.x - vertices[i].pos.x;
-        auto dy = vertices[j].pos.y - vertices[i].pos.y;
+        auto dx = vertices[i].pos.x - vertices[j].pos.x;
+        auto dy = vertices[i].pos.y - vertices[j].pos.y;
         auto dis = max2(MIN_DIS, sqrt(dx * dx + dy * dy));
 
         auto pull = force_gravitation(dis, ca);
-        vertices[j].disp.x -= dx / dis * pull;
-        vertices[j].disp.y -= dy / dis * pull;
+        vertices[i].disp.x -= dx / dis * pull;
+        vertices[i].disp.y -= dy / dis * pull;
       }
     }
 
     // move to new coordinates
-#pragma omp parallel for default(shared) schedule(dynamic, 16)
+#pragma omp parallel for default(shared) schedule(static)
     for (u32 i = 0; i < N; i++) {
       auto dx = vertices[i].disp.x;
       auto dy = vertices[i].disp.y;
