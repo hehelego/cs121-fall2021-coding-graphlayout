@@ -25,6 +25,8 @@ endif()
 ###
 ### Libraries
 ###
+find_package(CUDAToolkit)
+find_package(OpenMP)
 
 add_library(common common.cu)
 target_link_libraries(common

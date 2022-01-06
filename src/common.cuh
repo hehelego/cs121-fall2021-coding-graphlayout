@@ -8,7 +8,7 @@
 #include <algorithm>
 #include <string>
 
-// nVidia CUDA headers
+// Nvidia CUDA headers
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include <curand.h>
