@@ -10,13 +10,16 @@
 
 struct Vertex {
   Vec2D pos, disp;
-  __host__ __device__ Vertex(const Vec2D &p) : pos(p), disp() {}
+  Vertex(FP x = 0, FP y = 0) {
+    pos.x = x, pos.y = y;
+    disp.x = disp.y = 0;
+  }
 };
 
 struct Edge {
   u32 u, v;
-  __host__ __device__ Edge(u32 u = 0, u32 v = 0) : u(u), v(v) {}
-  __host__ __device__ inline bool operator<(const Edge &e) const { return u == e.u ? v < e.v : u < e.u; }
+  Edge(u32 u = 0, u32 v = 0) { this->u = u, this->v = v; }
+  inline bool operator<(const Edge &e) const { return u == e.u ? v < e.v : u < e.u; }
 };
 
 // INPUT:
@@ -30,7 +33,8 @@ struct Edge {
 //   - ITER: number of iterations to run
 // OUTPUT:
 //   - return: FP number, cost of time, in ms (1e-6 second)
-FP layout(Vertex *vertices, Edge *edges, u32 *edge_head, u32 *edge_tail, FP cr, FP ca, u32 N, u32 M, u32 ITER) {
+static inline void bound(FP &x, FP lo, FP hi) { x = min2(hi, max2(lo, x)); }
+static FP layout(Vertex *vertices, Edge *edges, u32 *edge_head, u32 *edge_tail, FP cr, FP ca, u32 N, u32 M, u32 ITER) {
   Timer timer;
   timer.start();
 
@@ -42,34 +46,41 @@ FP layout(Vertex *vertices, Edge *edges, u32 *edge_head, u32 *edge_tail, FP cr, 
     for (u32 i = 0; i < N; i++) {
       // push away other vertices
       for (u32 j = 0; j < N; j++) {
-        auto diff = vertices[j].pos - vertices[i].pos;
-        auto dis2 = max2(MIN_DIS, diff.norm_square());
-        auto dis1 = max2(MIN_DIS, sqrt(dis2));
+        auto dx = vertices[j].pos.x - vertices[i].pos.x;
+        auto dy = vertices[j].pos.y - vertices[i].pos.y;
+        auto dis = max2(MIN_DIS, sqrt(dx * dx + dy * dy));
 
-        auto push = force_hookelastic(dis1, cr);
-        vertices[j].disp += diff / dis1 * push;
+        auto push = force_hookelastic(dis, cr);
+        vertices[j].disp.x += dx / dis * push;
+        vertices[j].disp.y += dy / dis * push;
       }
       // attract other vertices
       u32 l = edge_head[i], r = edge_tail[i];
       for (u32 k = l; k <= r; k++) {
         u32 j = edges[k].v;
-        auto diff = vertices[j].pos - vertices[i].pos;
-        auto dis2 = max2(MIN_DIS, diff.norm_square());
-        auto dis1 = max2(MIN_DIS, sqrt(dis2));
+        auto dx = vertices[j].pos.x - vertices[i].pos.x;
+        auto dy = vertices[j].pos.y - vertices[i].pos.y;
+        auto dis = max2(MIN_DIS, sqrt(dx * dx + dy * dy));
 
-        auto pull = force_gravitation(dis1, ca);
-        vertices[j].disp -= diff / dis1 * pull;
+        auto pull = force_gravitation(dis, ca);
+        vertices[j].disp.x -= dx / dis * pull;
+        vertices[j].disp.y -= dy / dis * pull;
       }
     }
 
     // move to new coordinates
 #pragma omp parallel for default(shared) schedule(dynamic, 16)
     for (u32 i = 0; i < N; i++) {
-      FP dis1 = sqrt(vertices[i].disp.norm_square());
-      if (dis1 > temperature) vertices[i].pos += vertices[i].disp / dis1 * temperature;
-      vertices[i].pos.x = min(Width / 2, max(-Width / 2, vertices[i].pos.x));
-      vertices[i].pos.y = min(Height / 2, max(-Height / 2, vertices[i].pos.y));
-      vertices[i].disp = Vec2D(0, 0);
+      auto dx = vertices[i].disp.x;
+      auto dy = vertices[i].disp.y;
+      FP dis = sqrt(dx * dx + dy * dy);
+      if (dis > temperature) {
+        vertices[i].pos.x += dx / dis * temperature;
+        vertices[i].pos.y += dy / dis * temperature;
+      }
+      bound(vertices[i].pos.x, -Width / 2.0, Width / 2.0);
+      bound(vertices[i].pos.y, -Height / 2.0, Height / 2.0);
+      vertices[i].disp.x = vertices[i].disp.y = 0;
     }
 
     temperature *= COOLING_FACTOR;
@@ -89,8 +100,8 @@ i32 main(int argc, char *argv[]) {
 
   const u32 N = std::stoul(argv[1]), M = std::stoul(argv[2]), ITER = std::stoul(argv[3]);
   const String in_file(argv[4]), out_file(argv[5]);
-  ifstream in_stream(in_file);
-  ofstream out_stream(out_file);
+  std::ifstream in_stream(in_file);
+  std::ofstream out_stream(out_file);
 
   auto vertices = new Vertex[N];
   auto edges = new Edge[M];

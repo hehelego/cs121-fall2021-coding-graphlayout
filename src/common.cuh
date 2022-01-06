@@ -84,15 +84,6 @@ template <typename T> inline void setSymbol(T *dst, T *src, u32 n = 1) {
 
 struct Vec2D {
   FP x, y;
-  __host__ __device__ Vec2D(FP x, FP y) : x(x), y(y) {}
-  __host__ __device__ inline Vec2D operator+(const Vec2D &p) const { return Vec2D(x + p.x, y + p.y); }
-  __host__ __device__ inline void operator+=(const Vec2D &p) { x += p.x, y += p.y; }
-  __host__ __device__ inline Vec2D operator-(const Vec2D &p) const { return Vec2D(x - p.x, y - p.y); }
-  __host__ __device__ inline void operator-=(const Vec2D &p) { x -= p.x, y -= p.y; }
-  __host__ __device__ inline Vec2D operator*(const FP k) const { return Vec2D(x * k, y * k); }
-  __host__ __device__ inline void operator*=(const FP k) { x *= k, y *= k; }
-  __host__ __device__ inline FP dot(const Vec2D &p) const { return x * p.x + y * p.y; }
-  __host__ __device__ inline FP norm_square() const { return x * x + y * y; }
 };
 
 #endif
