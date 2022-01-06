@@ -8,6 +8,8 @@
 #include <random>
 #include <string>
 #include <vector>
+#include <cassert>
+#include <cstdint>
 
 // Nvidia CUDA headers
 #include <cuda.h>
@@ -21,7 +23,6 @@
 // checkCudaErrors(val)
 
 // types
-#include <cstdint>
 using i8 = int8_t;
 using u8 = uint8_t;
 using i16 = int16_t;
@@ -38,24 +39,29 @@ using String = std::string;
 // constants
 const FP EPS = 1e-10;
 const FP MIN_DIS = 1e-3;
-const FP Width = 10.0;
-const FP Height = 10.0;
-const FP START_TEMPERATURE = Width + Height;
 const FP COOLING_FACTOR = 0.98;
 
 // OMP CPU threads
 const u32 CPU_THS = 8;
 
 // common functions
-template <typename T> __host__ __device__ inline T max2(T a, T b) { return a < b ? b : a; }
-template <typename T> __host__ __device__ inline T min2(T a, T b) { return a < b ? a : b; }
+template <typename T> __host__ __device__ inline T max2(T a, T b) {
+  return a < b ? b : a;
+}
+template <typename T> __host__ __device__ inline T min2(T a, T b) {
+  return a < b ? a : b;
+}
 template <typename T> __host__ __device__ inline void swap2(T &a, T &b) {
   T c = a;
   b = a;
   a = c;
 }
-template <typename T> __host__ __device__ inline T force_hookelastic(T dist, T cr) { return cr / dist; }
-template <typename T> __host__ __device__ inline T force_gravitation(T dist, T ca) { return ca * dist * dist; }
+template <typename T> __host__ __device__ inline T force_push(T d, T k) {
+  return k * k / d;
+}
+template <typename T> __host__ __device__ inline T force_pull(T d, T k) {
+  return d * d / k;
+}
 
 namespace CODA {
 template <typename T> inline T *cuda_new(u32 n = 1) {
@@ -63,7 +69,9 @@ template <typename T> inline T *cuda_new(u32 n = 1) {
   checkCudaErrors(cudaMalloc(&p, sizeof(T) * n));
   return p;
 }
-template <typename T> inline void cuda_delete(T *p) { checkCudaErrors(cudaFree(p)); }
+template <typename T> inline void cuda_delete(T *p) {
+  checkCudaErrors(cudaFree(p));
+}
 
 template <typename T> inline void D2D(T *dst, T *src, u32 n = 1) {
   cudaMemcpy(dst, src, sizeof(T) * n, cudaMemcpyDeviceToDevice);
@@ -77,11 +85,43 @@ template <typename T> inline void H2D(T *dst, T *src, u32 n = 1) {
 template <typename T> inline void H2H(T *dst, T *src, u32 n = 1) {
   cudaMemcpy(dst, src, sizeof(T) * n, cudaMemcpyHostToHost);
 }
-template <typename T> inline void setSymbol(T *dst, T *src, u32 n = 1) { cudaMemcpyToSymbol(dst, src, sizeof(T) * n); }
+template <typename T> inline void setSymbol(T *dst, T *src, u32 n = 1) {
+  cudaMemcpyToSymbol(dst, src, sizeof(T) * n);
+}
 } // namespace CODA
 
 struct Vec2D {
   FP x, y;
+  __host__ __device__ Vec2D(FP x = 0, FP y = 0) : x(x), y(y) {}
+  __host__ __device__ inline Vec2D operator+(const Vec2D &p) const {
+    return Vec2D(x + p.x, y + p.y);
+  }
+  __host__ __device__ inline void operator+=(const Vec2D &p) {
+    x += p.x, y += p.y;
+  }
+  __host__ __device__ inline Vec2D operator-(const Vec2D &p) const {
+    return Vec2D(x - p.x, y - p.y);
+  }
+  __host__ __device__ inline void operator-=(const Vec2D &p) {
+    x -= p.x, y -= p.y;
+  }
+  __host__ __device__ inline Vec2D operator*(const FP k) const {
+    return Vec2D(x * k, y * k);
+  }
+  __host__ __device__ inline void operator*=(const FP k) { x *= k, y *= k; }
+  __host__ __device__ inline Vec2D operator/(const FP k) const {
+    return Vec2D(x / k, y / k);
+  }
+  __host__ __device__ inline void operator/=(const FP k) { x /= k, y /= k; }
+
+  __host__ __device__ inline FP dot(const Vec2D &p) const {
+    return x * p.x + y * p.y;
+  }
+  __host__ __device__ inline FP norm() const { return sqrt(x * x + y * y); }
 };
+std::ostream &operator<<(std::ostream &os, const Vec2D &v) {
+  os << "Vec2D(" << v.x << "," << v.y << ")";
+  return os;
+}
 
 #endif

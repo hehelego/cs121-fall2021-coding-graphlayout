@@ -1,5 +1,4 @@
 #!/usr/bin/python
-
 from typing import Tuple
 import argparse
 import sys
@@ -45,9 +44,10 @@ def main():
     xs, ys = raw_coordinate.transpose()
     points = raw_coordinate
 
-    plt.scatter(x=xs, y=ys, color='red')
-    plt.gca().add_collection(LineCollection(points[raw_edge]))
-    plt.show()
+    plt.gca().add_collection(LineCollection(points[raw_edge], linewidths=0.05, alpha=0.3))
+    plt.scatter(x=xs, y=ys, color='red', s=0.1, zorder=10)
+    plt.xlim(xs.min(), xs.max())
+    plt.ylim(ys.min(), ys.max())
     plt.savefig(path_out)
 
 
