@@ -1,4 +1,5 @@
-#pragma once
+#ifndef CS121_PROJ_COMM_H
+#define CS121_PROJ_COMM_H
 
 // C++ standard library
 #include <algorithm>
@@ -96,3 +97,5 @@ struct Vec2D {
   __host__ __device__ inline FP dot(const Vec2D &p) const { return x * p.x + y * p.y; }
   __host__ __device__ inline FP norm_square() const { return x * x + y * y; }
 };
+
+#endif
