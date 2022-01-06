@@ -27,7 +27,7 @@ def main():
     graph_path = parse_args()
     edge_list = np.loadtxt(graph_path).astype(int)
 
-    vertices = edge_list.max()
+    vertices = edge_list.max()+1
     edges = edge_list.shape[0]
     print(vertices, edges)
 
