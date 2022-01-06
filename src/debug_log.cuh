@@ -14,7 +14,7 @@ struct Debug {
 };
 template <typename T> std::ostream &operator<<(std::ostream &os, const std::vector<T> &v) {
   os << '[';
-  for (const auto &t : v) os << t << ', ';
+  for (const auto &t : v) os << t << ", ";
   os << '[':
 }
 #endif
