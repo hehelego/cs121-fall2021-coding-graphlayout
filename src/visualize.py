@@ -40,8 +40,8 @@ def parse_args() -> Tuple[str, str, str]:
 def main():
     path_edge, path_coordinate, path_out = parse_args()
 
-    raw_edge = np.loadtxt(path_edge, delimiter=' ').astype(int)
-    raw_coordinate = np.loadtxt(path_coordinate, delimiter=' ')
+    raw_edge = np.loadtxt(path_edge).astype(int)
+    raw_coordinate = np.loadtxt(path_coordinate)
     xs, ys = raw_coordinate.transpose()
     points = raw_coordinate[:, :-1]
 

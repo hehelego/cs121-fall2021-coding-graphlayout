@@ -25,7 +25,7 @@ def parse_args() -> str:
 
 def main():
     graph_path = parse_args()
-    edge_list = np.loadtxt(graph_path, delimiter=' ').astype(int)
+    edge_list = np.loadtxt(graph_path).astype(int)
 
     vertices = edge_list.max()
     edges = edge_list.shape[0]
