@@ -2,6 +2,11 @@
 ### compiling&linking options
 ###
 
+set(OMP_THREADS STRING CACHED 8)
+add_compile_definitions(
+    -D OMP_THREADS=${OMP_THREADS}
+)
+
 # Enable cuda device debugging for Debug build.
 # Enable optimization for Release build.
 if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
@@ -28,19 +33,15 @@ endif()
 find_package(CUDAToolkit)
 find_package(OpenMP)
 
-add_library(common common.cu)
-target_link_libraries(common
-    CUDA::curand
-)
+# target_link_libraries(common CUDA::curand)
 
 
 ###
 ### Executables
 ###
 
-add_executable(main
-    main.cu
-)
-target_link_libraries(main
-    common
-)
+# Runs on CPU with OpenMP thread parallelism
+add_executable(cpu cpu_omp.cu)
+
+# Runs on GPU accelerated by CUDA
+add_executable(gpu gpu_cuda.cu)

@@ -42,10 +42,10 @@ def main():
 
     raw_edge = np.loadtxt(path_edge, delimiter=' ').astype(int)
     raw_coordinate = np.loadtxt(path_coordinate, delimiter=' ')
-    xs, ys, ws = raw_coordinate.transpose()
+    xs, ys = raw_coordinate.transpose()
     points = raw_coordinate[:, :-1]
 
-    plt.scatter(x=xs, y=ys, s=ws*100, color='red')
+    plt.scatter(x=xs, y=ys, color='red')
     plt.gca().add_collection(LineCollection(points[raw_edge]))
     plt.show()
     plt.savefig(path_out)

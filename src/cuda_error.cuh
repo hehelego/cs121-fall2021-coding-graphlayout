@@ -1,8 +1,8 @@
+#pragam once
 
 static const char *_cudaGetErrorEnum(cudaError_t error) {
   return cudaGetErrorName(error);
 }
-#endif
 
 #ifdef CUDA_DRIVER_API
 // CUDA Driver API errors
