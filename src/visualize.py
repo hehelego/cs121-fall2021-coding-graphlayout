@@ -18,7 +18,7 @@ def parse_args() -> Tuple[str, str, str]:
         '\t\tPath to the edge file',
         '\tinput_coordinate(required): path',
         '\t\tPath to the coordinate file',
-        '\t\tA triple of space separated real number on each line: x y-coordinate centrality',
+        '\t\tA triple of space separated real number on each line: x-coordinate y-coordinate',
         '\toutput(required): path',
         '\t\tThe output image will be saved in the output file',
     ]
@@ -43,7 +43,7 @@ def main():
     raw_edge = np.loadtxt(path_edge).astype(int)
     raw_coordinate = np.loadtxt(path_coordinate)
     xs, ys = raw_coordinate.transpose()
-    points = raw_coordinate[:, :-1]
+    points = raw_coordinate
 
     plt.scatter(x=xs, y=ys, color='red')
     plt.gca().add_collection(LineCollection(points[raw_edge]))

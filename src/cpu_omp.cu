@@ -93,7 +93,7 @@ static FP layout(Vertex *vertices, Edge *edges, u32 *edge_head, u32 *edge_tail, 
 i32 main(int argc, char *argv[]) {
   omp_set_num_threads(CPU_THS);
 
-  if (argc < 3) {
+  if (argc < 6) {
     Debug() << "Usage: bin/cpu N M ITER in_file out_file\n";
     std::exit(1);
   }
