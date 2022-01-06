@@ -77,9 +77,7 @@ template <typename T> inline void H2D(T *dst, T *src, u32 n = 1) {
 template <typename T> inline void H2H(T *dst, T *src, u32 n = 1) {
   cudaMemcpy(dst, src, sizeof(T) * n, cudaMemcpyHostToHost);
 }
-template <typename T> inline void setSymbol(T *dst, T *src, u32 n = 1) {
-  cudaMemcpyToSymbol(deviceParams, &params, sizeof(T) * n);
-}
+template <typename T> inline void setSymbol(T *dst, T *src, u32 n = 1) { cudaMemcpyToSymbol(dst, src, sizeof(T) * n); }
 } // namespace CODA
 
 struct Vec2D {

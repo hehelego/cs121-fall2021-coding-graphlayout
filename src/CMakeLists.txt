@@ -2,6 +2,10 @@
 ### compiling&linking options
 ###
 
+# enable openmp
+add_compile_options(-fopenmp)
+add_link_options(-fopenmp)
+
 # Enable cuda device debugging for Debug build.
 # Enable optimization for Release build.
 if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
@@ -27,8 +31,6 @@ endif()
 ###
 find_package(CUDAToolkit)
 find_package(OpenMP)
-
-
 
 ###
 ### Executables

@@ -115,8 +115,8 @@ i32 main(int argc, char *argv[]) {
     edges[i] = Edge(u, v);
   }
   std::sort(edges, edges + M);
-  for (u32 i = M - 1; i >= 0; i--) head[edges[i].u] = i;
-  for (u32 i = 0; i < M; i++) tail[edges[i].u] = i;
+  for (i32 i = M - 1; i >= 0; i--) head[edges[i].u] = i;
+  for (i32 i = 0; i < M; i++) tail[edges[i].u] = i;
 
   std::random_device rdev;
   std::mt19937 rng(rdev());

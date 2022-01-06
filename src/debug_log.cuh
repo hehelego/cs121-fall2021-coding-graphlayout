@@ -10,11 +10,13 @@ struct Debug {
     os << t;
 #endif
     (void)t;
+    return *this;
   }
 };
 template <typename T> std::ostream &operator<<(std::ostream &os, const std::vector<T> &v) {
   os << '[';
   for (const auto &t : v) os << t << ", ";
-  os << '[':
+  os << '[';
+  return os;
 }
 #endif
