@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 from typing import Tuple
 import argparse
 import sys
@@ -44,7 +44,7 @@ def main():
     xs, ys = raw_coordinate.transpose()
     points = raw_coordinate
 
-    plt.gca().add_collection(LineCollection(points[raw_edge], linewidths=0.05, alpha=0.3))
+    plt.gca().add_collection(LineCollection(points[raw_edge], linewidths=0.05, alpha=0.2))
     plt.scatter(x=xs, y=ys, color='red', s=0.1, zorder=10)
     plt.xlim(xs.min(), xs.max())
     plt.ylim(ys.min(), ys.max())

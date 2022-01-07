@@ -1,8 +1,7 @@
 .vscode/
 data/
 bin/
-copy-all.fish
-copy-src.fish
+core/
 
 
 ## Core latex/pdflatex auxiliary files:

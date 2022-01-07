@@ -81,7 +81,11 @@ static FP layout(Vertex *vertices, Edge *edges, u32 *edge_head, u32 *edge_tail,
 }
 
 i32 main(int argc, char *argv[]) {
-  std::cout << omp_get_num_threads() << " ";
+  #pragma omp parallel
+  {
+    #pragma omp master
+    std::cout << omp_get_num_threads() << " ";
+  }
 
   if (argc < 6) {
     std::cerr << "Usage: bin/cpu N M ITER in_file out_file\n";
@@ -122,8 +126,7 @@ i32 main(int argc, char *argv[]) {
   }
 
   f32 K = sqrt(SIZE * SIZE / N) / (1.0 * N * N / M);
-  // auto runtime = layout(vertices, edges, head, tail, K, N, M, ITER, START_TEMP, SIZE);
-  auto runtime = ITER*1e5;
+  auto runtime = layout(vertices, edges, head, tail, K, N, M, ITER, START_TEMP, SIZE);
 
   for (u32 i = 0; i < N; i++) {
     FP x = vertices[i].pos.x, y = vertices[i].pos.y;
