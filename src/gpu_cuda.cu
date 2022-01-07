@@ -38,24 +38,21 @@ static inline __device__ void bound(FP &x, FP lo, FP hi) {
 
 static __global__ void pushKernel(Vertex *vertices, FP K, u32 N, FP MIN_DIS) {
   u32 i = blockIdx.x * blockDim.x + threadIdx.x;
-  if (i < N) {
-    Vec2D posi = vertices[i].pos;
-    Vec2D disp(0, 0);
-    for (u32 j = 0; j < N; j++) {
-      auto diff = posi - vertices[j].pos;
-      auto dis = max2(MIN_DIS, diff.norm());
+  u32 j = blockIdx.y * blockDim.y + threadIdx.y;
+  if (i < N && j < N) {
+    auto diff = vertices[i].pos - vertices[j].pos;
+    auto dis = max2(MIN_DIS, diff.norm());
 
-      auto push = force_push(dis, K);
-      disp += diff / dis * push;
-    }
-    vertices[i].disp += disp;
+    auto push = force_push(dis, K);
+    auto disp = diff / dis * push;
+    atomicAdd(&vertices[i].disp.x, disp.x),
+        atomicAdd(&vertices[i].disp.y, disp.y);
   }
 }
 static __global__ void pullKernel(Vertex *vertices, Edge *edges, FP K, u32 N,
                                   u32 M, FP MIN_DIS) {
   u32 k = blockIdx.x * blockDim.x + threadIdx.x;
-  u32 stride = blockDim.x * gridDim.x;
-  while (k < M) {
+  if (k < M) {
     auto e = edges[k];
     u32 i = e.u, j = e.v;
     auto diff = vertices[i].pos - vertices[j].pos;
@@ -65,7 +62,6 @@ static __global__ void pullKernel(Vertex *vertices, Edge *edges, FP K, u32 N,
     auto disp = diff / (-dis) * pull;
     atomicAdd(&vertices[i].disp.x, disp.x),
         atomicAdd(&vertices[i].disp.y, disp.y);
-    k += stride;
   }
 }
 static __global__ void updateKernel(Vertex *vertices, u32 N, FP temperature,
@@ -82,22 +78,19 @@ static __global__ void updateKernel(Vertex *vertices, u32 N, FP temperature,
 
 static inline u32 div_ceil(u32 a, u32 b) { return (a + b - 1) / b; }
 static FP layout(Vertex *vertices, Edge *edges, FP K, u32 N, u32 M, u32 ITER,
-                 FP START_TEMP, FP SIZE, u32 THREADS_PER_BLOCK) {
+                 FP START_TEMP, FP SIZE, u32 TH_X, u32 TH_Y) {
   Timer timer;
   checkCudaErrors(cudaDeviceSynchronize());
   timer.start();
 
-  u32 BLOCKS_N = div_ceil(N, THREADS_PER_BLOCK);
-  u32 BLOCKS_M = div_ceil(N, THREADS_PER_BLOCK);
   FP temperature = START_TEMP;
+  u32 B_X = div_ceil(N, TH_X), B_Y = div_ceil(N, TH_Y);
   for (u32 run = 0; run < ITER; run++) {
     // compuate the forces in parallel
-    pushKernel<<<BLOCKS_N, THREADS_PER_BLOCK>>>(vertices, K, N, MIN_DIS);
-    pullKernel<<<BLOCKS_M, THREADS_PER_BLOCK>>>(vertices, edges, K, N, M,
-                                                MIN_DIS);
+    pushKernel<<<dim3(B_X, B_Y), dim3(TH_X, TH_Y)>>>(vertices, K, N, MIN_DIS);
+    pullKernel<<<div_ceil(M, TH_X), TH_X>>>(vertices, edges, K, N, M, MIN_DIS);
     // move to new coordinates
-    updateKernel<<<BLOCKS_N, THREADS_PER_BLOCK>>>(vertices, N, temperature,
-                                                  SIZE);
+    updateKernel<<<div_ceil(N, TH_X), TH_X>>>(vertices, N, temperature, SIZE);
     temperature *= COOLING_FACTOR;
   }
 
@@ -107,16 +100,18 @@ static FP layout(Vertex *vertices, Edge *edges, FP K, u32 N, u32 M, u32 ITER,
 }
 
 i32 main(int argc, char *argv[]) {
-  auto raw_threads = getenv("CUDA_THREADS_PER_BLOCK");
-  const u32 THREADS_PER_BLOCK = std::stoul(raw_threads ? raw_threads : "1024");
-  std::cout << THREADS_PER_BLOCK << " ";
+  auto raw_bx = getenv("CUDA_BLOCK_X");
+  auto raw_by = getenv("CUDA_BLOCK_Y");
+  const u32 BLOCK_X = std::stoul(raw_bx ? raw_bx : "32");
+  const u32 BLOCK_Y = std::stoul(raw_by ? raw_by : "32");
+  std::cout << BLOCK_X << "," << BLOCK_Y << " ";
 
   if (argc < 6) {
     std::cerr << "Usage: bin/gpu N M ITER in_file out_file\n";
     std::exit(1);
   }
 
-  const u32 N = std::stoul(argv[1]), M = std::stoul(argv[2]),
+  const u32 N = std::stoul(argv[1]), M = std::stoul(argv[2]) * 2,
             ITER = std::stoul(argv[3]);
   const String in_file(argv[4]), out_file(argv[5]);
   std::ifstream in_stream(in_file);
@@ -128,9 +123,9 @@ i32 main(int argc, char *argv[]) {
   auto vertices = new Vertex[N];
   auto edges = new Edge[M];
 
-  for (u32 i = 0, u, v; i < M; i++) {
+  for (u32 i = 0, u, v; i < M; i += 2) {
     in_stream >> u >> v;
-    edges[i] = Edge(u, v);
+    edges[i] = Edge(u, v), edges[i + 1] = Edge(v, u);
   }
   std::sort(edges, edges + M);
 
@@ -150,7 +145,7 @@ i32 main(int argc, char *argv[]) {
   CODA::H2D(edges_device, edges, M);
 
   auto runtime = layout(vertices_device, edges_device, K, N, M, ITER,
-                        START_TEMP, SIZE, THREADS_PER_BLOCK);
+                        START_TEMP, SIZE, BLOCK_X, BLOCK_Y);
 
   CODA::D2H(vertices, vertices_device, N);
   for (u32 i = 0; i < N; i++) {

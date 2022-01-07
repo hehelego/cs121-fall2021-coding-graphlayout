@@ -6,6 +6,7 @@ scripts
 
 - `test_cpu.fish`: run once verification with `data/test`.
 - `test_gpu.fish`: run once verification with `data/test`.
+- the above two testing scripts will run graph layout algorithm with `data/test` as input and give a `data/image.png` as output
 - `all.fish`: run a full-benchmark.
 - `build.fish`: compile the project.
 

@@ -9,27 +9,28 @@ cmake -D CMAKE_CUDA_ARCHITECTURES=$GPU_SM_ARCH -D CMAKE_BUILD_TYPE=$BUILD_TYPE .
 make -j10
 
 # benchmarking
-
-set cpu_threads 1 4 8 12 16 20
-set gpu_threads 16 64 256 1024
 set files \
     data/clique100 data/clique200 data/clique300 data/clique400 data/clique500 \
-    data/wikivote data/Gowalla
+    data/soc-wiki-Vote data/fb-pages-tvshow
+# https://nrvis.com/download/data/soc/soc-wiki-Vote.zip
+# https://nrvis.com/./download/data/soc/fb-pages-tvshow.zip
 
 mkdir data
+python src/generate_testcases.py
 echo -n '' > data/bench.cpu
 echo -n '' > data/bench.gpu
-python src/generate_testcases.py
+
+set cpu_threads 1 4 8 12 16 20
+set -x CUDA_BLOCK_X 128
+set -x CUDA_BLOCK_Y 8
 
 for fin in $files
     echo "##### benchmark on $fin"
 
-    for ths in $gpu_threads
-        set -x CUDA_THREADS_PER_BLOCK $ths
-        echo "## GPU program started, with block=$ths"
-        ./once_gpu.fish $fin data/bench.gpu
-        echo "## GPU program ended"
-    end
+
+    echo "## GPU program started"
+    ./once_gpu.fish $fin data/bench.gpu
+    echo "## GPU program ended"
 
     for ths in $cpu_threads
         set -x OMP_NUM_THREADS $ths

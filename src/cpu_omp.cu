@@ -81,9 +81,9 @@ static FP layout(Vertex *vertices, Edge *edges, u32 *edge_head, u32 *edge_tail,
 }
 
 i32 main(int argc, char *argv[]) {
-  #pragma omp parallel
+#pragma omp parallel
   {
-    #pragma omp master
+#pragma omp master
     std::cout << omp_get_num_threads() << " ";
   }
 
@@ -92,7 +92,7 @@ i32 main(int argc, char *argv[]) {
     std::exit(1);
   }
 
-  const u32 N = std::stoul(argv[1]), M = std::stoul(argv[2]),
+  const u32 N = std::stoul(argv[1]), M = std::stoul(argv[2]) * 2,
             ITER = std::stoul(argv[3]);
   const String in_file(argv[4]), out_file(argv[5]);
   std::ifstream in_stream(in_file);
@@ -107,9 +107,9 @@ i32 main(int argc, char *argv[]) {
   std::fill(head, head + (N + 1), M);
   std::fill(tail, tail + (N + 1), 0);
 
-  for (u32 i = 0, u, v; i < M; i++) {
+  for (u32 i = 0, u, v; i < M; i += 2) {
     in_stream >> u >> v;
-    edges[i] = Edge(u, v);
+    edges[i] = Edge(u, v), edges[i + 1] = Edge(v, u);
   }
   std::sort(edges, edges + M);
   for (i32 i = M - 1; i >= 0; i--)
@@ -126,7 +126,8 @@ i32 main(int argc, char *argv[]) {
   }
 
   f32 K = sqrt(SIZE * SIZE / N) / (1.0 * N * N / M);
-  auto runtime = layout(vertices, edges, head, tail, K, N, M, ITER, START_TEMP, SIZE);
+  auto runtime =
+      layout(vertices, edges, head, tail, K, N, M, ITER, START_TEMP, SIZE);
 
   for (u32 i = 0; i < N; i++) {
     FP x = vertices[i].pos.x, y = vertices[i].pos.y;
@@ -137,6 +138,6 @@ i32 main(int argc, char *argv[]) {
   delete[] edges;
   delete[] head, delete[] tail;
 
-  std::cout<< runtime/ITER << "\n";
+  std::cout << runtime / ITER << "\n";
   return 0;
 }

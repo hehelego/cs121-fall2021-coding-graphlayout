@@ -9,13 +9,11 @@ from random import randint as rand
 def gen_clique(n: int, f: IO[str]):
     for i in range(n):
         for j in range(n):
-            if i==j:
-                continue
-            print(f'{i} {j}',file=f)
+            if i<j:
+                print(f'{i} {j}',file=f)
 def gen_tree(n: int, f: IO[str]):
     for i in range(1,n):
         j = rand(0,i-1)
-        print(f'{i} {j}',file=f)
         print(f'{j} {i}',file=f)
 
 if __name__ == '__main__':
@@ -26,5 +24,3 @@ if __name__ == '__main__':
             gen_clique(i,f)
         with open(f'data/tree{i}','w') as f:
             gen_tree(i,f)
-    with open('data/test','w') as f:
-        gen_clique(100,f)
