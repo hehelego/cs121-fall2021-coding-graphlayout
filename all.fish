@@ -21,7 +21,7 @@ python src/generate_testcases.py
 echo -n '' > data/bench.cpu
 echo -n '' > data/bench.gpu
 
-set cpu_threads 1 4 8 12 16 20
+set cpu_threads 1 2 4 6 8 10 12 14 16
 set -x CUDA_BLOCK_X 128
 set -x CUDA_BLOCK_Y 8
 
@@ -33,10 +33,10 @@ for fin in $files
     ./once_gpu.fish $fin data/bench.gpu
     echo "## GPU program ended"
 
-    # for ths in $cpu_threads
-    #     set -x OMP_NUM_THREADS $ths
-    #     echo "## CPU program started, with threads=$OMP_NUM_THREADS"
-    #     ./once_cpu.fish $fin data/bench.cpu
-    #     echo "## CPU program ended"
-    # end
+    for ths in $cpu_threads
+        set -x OMP_NUM_THREADS $ths
+        echo "## CPU program started, with threads=$OMP_NUM_THREADS"
+        ./once_cpu.fish $fin data/bench.cpu
+        echo "## CPU program ended"
+    end
 end
