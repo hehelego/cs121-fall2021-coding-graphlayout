@@ -19,10 +19,43 @@ environment variables
 
 ## algorithm design
 
+
+
 ## testcase
+
+On GPU, we launch bunch of blocks of `128 x 8` threads.  
+We tested for the best block configuration.
+
+```plaintext
+BLOCK TIME
+128,8 545.86
+64,16 778.63
+32,32 1204.94
+256,4 563.73
+512,2 571.94
+```
 
 ## performance
 
+### GPU
+
+```plaintext
+data/clique100 41.07
+data/clique200 97.23
+data/clique300 182.64
+data/clique400 340.9
+data/clique500 546.08
+data/tree100 31.8
+data/tree200 47.39
+data/tree300 60.33
+data/tree400 89.59
+data/tree500 106.75
+data/soc-wiki-Vote 259.75
+data/fb-pages-tvshow 4228.8
+```
+
+### CPU
+
 ## reference
 
-- [Multi-Level Graph Layout on the GPU](https://ieeexplore.ieee.org/abstract/document/4376155)
+1. [Multi-Level Graph Layout on the GPU](https://ieeexplore.ieee.org/abstract/document/4376155)

@@ -11,6 +11,7 @@ make -j10
 # benchmarking
 set files \
     data/clique100 data/clique200 data/clique300 data/clique400 data/clique500 \
+    data/tree100 data/tree200 data/tree300 data/tree400 data/tree500 \
     data/soc-wiki-Vote data/fb-pages-tvshow
 # https://nrvis.com/download/data/soc/soc-wiki-Vote.zip
 # https://nrvis.com/./download/data/soc/fb-pages-tvshow.zip
@@ -32,10 +33,10 @@ for fin in $files
     ./once_gpu.fish $fin data/bench.gpu
     echo "## GPU program ended"
 
-    for ths in $cpu_threads
-        set -x OMP_NUM_THREADS $ths
-        echo "## CPU program started, with threads=$OMP_NUM_THREADS"
-        ./once_cpu.fish $fin data/bench.cpu
-        echo "## CPU program ended"
-    end
+    # for ths in $cpu_threads
+    #     set -x OMP_NUM_THREADS $ths
+    #     echo "## CPU program started, with threads=$OMP_NUM_THREADS"
+    #     ./once_cpu.fish $fin data/bench.cpu
+    #     echo "## CPU program ended"
+    # end
 end
