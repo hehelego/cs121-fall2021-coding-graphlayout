@@ -29,7 +29,6 @@ endif()
 ###
 ### Libraries
 ###
-find_package(CUDAToolkit)
 find_package(OpenMP)
 
 ###
@@ -38,8 +37,5 @@ find_package(OpenMP)
 
 # Runs on CPU with OpenMP thread parallelism
 add_executable(cpu cpu_omp.cu)
-target_link_libraries(cpu CUDA::curand)
-
 # Runs on GPU accelerated by CUDA
 add_executable(gpu gpu_cuda.cu)
-target_link_libraries(gpu CUDA::curand)

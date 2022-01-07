@@ -10,7 +10,8 @@ make -j10
 
 # benchmarking
 
-set threads 1 4 8 12 16 20
+set cpu_threads 1 4 8 12 16 20
+set gpu_threads 16 64 256 1024
 set files \
     data/clique100 data/clique200 data/clique300 data/clique400 data/clique500 \
     data/wikivote data/Gowalla
@@ -23,10 +24,14 @@ python src/generate_testcases.py
 for fin in $files
     echo "##### benchmark on $fin"
 
-    echo "## GPU program started"
-    ./once_gpu.fish $fin data/bench.gpu
-    echo "## GPU program ended"
-    for ths in $threads
+    for ths in $gpu_threads
+        set -x CUDA_THREADS_PER_BLOCK $ths
+        echo "## GPU program started, with block=$ths"
+        ./once_gpu.fish $fin data/bench.gpu
+        echo "## GPU program ended"
+    end
+
+    for ths in $cpu_threads
         set -x OMP_NUM_THREADS $ths
         echo "## CPU program started, with threads=$OMP_NUM_THREADS"
         ./once_cpu.fish $fin data/bench.cpu

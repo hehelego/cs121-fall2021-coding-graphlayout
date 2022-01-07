@@ -14,7 +14,6 @@
 // Nvidia CUDA headers
 #include <cuda.h>
 #include <cuda_runtime.h>
-#include <curand.h>
 
 // my headers
 #include "cuda_error.cuh"
